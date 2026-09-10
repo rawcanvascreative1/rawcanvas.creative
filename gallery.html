@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+        window.scrollTo(0, 0);
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Gallery | Raw Canvas Creative</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <meta name="description" content="The complete Raw Canvas Creative portfolio: cinematic 3D websites, film & photo direction, brand identity, and app design, laid out as a contact sheet of selected works.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* -------------------------------------------------------------
+        DESIGN SYSTEM & VARIABLES (shared with the main site)
+           ------------------------------------------------------------- */
+        :root {
+            --bg-primary: #0C0806;
+            --bg-secondary: #140E0C;
+            --bg-card: rgba(20, 14, 12, 0.45);
+            --color-orange: #C15C2E;
+            --color-orange-glow: #E96D36;
+            --color-gold: #F3A46B;
+            --color-text-dark: #20140F;
+            --color-text-light: #F8F5F2;
+            --color-text-muted: #A89F9B;
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --font-serif: 'Playfair Display', serif;
+            --transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            --border-glass: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            scroll-behavior: smooth;
+            background-color: var(--bg-primary);
+            color: var(--color-text-light);
+            font-family: var(--font-body);
+            font-size: 16px;
+            overflow-x: hidden;
+        }
+
+        body {
+            overflow-x: hidden;
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--color-orange); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-orange-glow); }
+
+        /* Film Grain */
+        .film-grain {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            opacity: 0.055; pointer-events: none; z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .grid-canvas-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            opacity: 0.02; pointer-events: none; z-index: -2;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, var(--color-orange), var(--color-orange-glow));
+            z-index: 1000; width: 0%;
+            box-shadow: 0 0 10px var(--color-orange-glow);
+        }
+
+        .custom-cursor {
+            position: fixed; width: 6px; height: 6px;
+            background-color: var(--color-orange-glow); border-radius: 50%;
+            pointer-events: none; transform: translate(-50%, -50%); z-index: 10000;
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            box-shadow: 0 0 8px var(--color-orange-glow);
+        }
+
+        .custom-cursor-follower {
+            position: fixed; width: 32px; height: 32px;
+            border: 1.5px solid var(--color-orange); border-radius: 50%;
+            pointer-events: none; transform: translate(-50%, -50%); z-index: 9999;
+            opacity: 0.4;
+            transition: transform 0.08s ease-out, width 0.3s, height 0.3s, background-color 0.3s, border-color 0.3s;
+        }
+
+        body.cursor-hover .custom-cursor { width: 10px; height: 10px; background-color: var(--color-text-light); box-shadow: none; }
+        body.cursor-hover .custom-cursor-follower { width: 50px; height: 50px; background-color: rgba(229, 109, 54, 0.12); border-color: var(--color-gold); opacity: 1; }
+
+        #canvas-3d { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+
+        /* NAVBAR */
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; z-index: 100; background: rgba(12, 8, 6, 0.3); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: var(--border-glass); transition: var(--transition-smooth); }
+        .navbar.scrolled { background: rgba(12, 8, 6, 0.8); border-bottom: 1px solid rgba(229, 109, 54, 0.1); }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 50px; height: 95px; display: flex; justify-content: space-between; align-items: center; transition: var(--transition-smooth); }
+        .navbar.scrolled .nav-container { height: 80px; }
+        .logo-link { display: flex; align-items: center; text-decoration: none; }
+        .site-logo { height: 58px; width: auto; display: block; transition: transform 0.3s ease; }
+        .logo-link:hover .site-logo { transform: scale(1.04); }
+        .nav-menu { display: flex; align-items: center; gap: 45px; }
+        .nav-item { font-family: var(--font-heading); font-weight: 500; font-size: 0.9rem; color: var(--color-text-light); text-decoration: none; letter-spacing: 1.5px; text-transform: uppercase; transition: var(--transition-smooth); position: relative; opacity: 0.75; }
+        .nav-item::after { content: ''; position: absolute; bottom: -6px; left: 50%; width: 0; height: 1.5px; background-color: var(--color-orange-glow); transition: var(--transition-smooth); transform: translateX(-50%); }
+        .nav-item:hover { opacity: 1; color: var(--color-orange-glow); }
+        .nav-item:hover::after { width: 80%; }
+        .nav-item.is-active { opacity: 1; color: var(--color-orange-glow); }
+        .nav-item.is-active::after { width: 80%; }
+        .nav-btn { font-family: var(--font-heading); font-weight: 600; font-size: 0.85rem; color: var(--bg-primary); background: linear-gradient(135deg, var(--color-text-light), #E1DCD9); text-decoration: none; letter-spacing: 1.5px; text-transform: uppercase; padding: 13px 30px; border-radius: 30px; transition: var(--transition-smooth); border: 1px solid transparent; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05); }
+        .nav-btn:hover { background: transparent; color: var(--color-text-light); border-color: var(--color-orange-glow); box-shadow: 0 0 25px rgba(229, 109, 54, 0.4); }
+        .mobile-menu-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 6px; z-index: 110; }
+        .mobile-menu-toggle .bar { width: 25px; height: 2px; background-color: var(--color-text-light); transition: var(--transition-smooth); }
+
+        /* PRELOADER */
+        #preloader { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 10000; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; pointer-events: all; }
+        .preloader-inner { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+        .preloader-mark { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .preloader-tag { font-family: var(--font-heading); font-weight: 600; font-size: 0.7rem; letter-spacing: 5px; color: var(--color-text-muted); text-transform: uppercase; }
+        .preloader-word { font-family: var(--font-heading); font-weight: 800; font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: 2px; color: var(--color-text-light); display: flex; gap: 0.4rem; }
+        .preloader-word span { background: linear-gradient(135deg, var(--color-orange-glow) 20%, var(--color-gold) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .preloader-bar-track { width: 220px; height: 2px; background: rgba(255, 255, 255, 0.08); border-radius: 2px; overflow: hidden; position: relative; }
+        .preloader-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--color-orange-glow), var(--color-gold)); box-shadow: 0 0 12px var(--color-orange-glow); }
+        .preloader-count { font-family: var(--font-heading); font-weight: 500; font-size: 0.75rem; letter-spacing: 3px; color: var(--color-text-muted); }
+        .preloader-count span { color: var(--color-orange-glow); font-weight: 700; }
+        body.is-loading { overflow: hidden; height: 100vh; }
+
+        /* SECTIONS / BUTTONS SHARED */
+        section { padding: 150px 50px; position: relative; z-index: 10; }
+        .section-container { max-width: 1400px; margin: 0 auto; }
+        .section-tag { font-family: var(--font-heading); font-weight: 600; font-size: 0.8rem; color: var(--color-orange-glow); letter-spacing: 4px; text-transform: uppercase; display: inline-block; margin-bottom: 15px; background: linear-gradient(90deg, var(--color-orange-glow), var(--color-gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .section-title { font-family: var(--font-heading); font-weight: 800; font-size: clamp(2.2rem, 4.5vw, 3.5rem); line-height: 1.2; margin-bottom: 22px; letter-spacing: -0.5px; }
+        .section-desc { color: var(--color-text-muted); font-size: 1.1rem; font-weight: 300; line-height: 1.7; }
+
+        .btn-primary { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-heading); font-weight: 600; font-size: 0.9rem; color: var(--color-text-light); background: linear-gradient(135deg, var(--color-orange), var(--color-orange-glow)); text-decoration: none; letter-spacing: 1.5px; text-transform: uppercase; padding: 18px 40px; border-radius: 30px; transition: var(--transition-smooth); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 30px rgba(193, 92, 46, 0.3); }
+        .btn-primary i { width: 18px; height: 18px; transition: transform 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 35px rgba(233, 109, 54, 0.55); border-color: rgba(255, 255, 255, 0.15); }
+        .btn-primary:hover i { transform: translate(3px, -3px); }
+
+        .btn-secondary { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-weight: 600; font-size: 0.9rem; color: var(--color-text-light); background-color: rgba(255, 255, 255, 0.03); text-decoration: none; letter-spacing: 1.5px; text-transform: uppercase; padding: 18px 40px; border-radius: 30px; transition: var(--transition-smooth); border: var(--border-glass); }
+        .btn-secondary:hover { background-color: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.15); transform: translateY(-3px); }
+        .btn-secondary i { width: 16px; height: 16px; }
+
+        .glass-card { background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: var(--border-glass); border-radius: 24px; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45); transition: var(--transition-smooth); position: relative; overflow: hidden; }
+        .glass-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(229, 109, 54, 0.08), transparent 40%); z-index: 1; pointer-events: none; border-radius: inherit; transition: opacity 0.5s; }
+
+        /* -------------------------------------------------------------
+           GALLERY HERO
+           ------------------------------------------------------------- */
+        .gallery-hero { padding: 200px 50px 60px; text-align: center; }
+        .gallery-breadcrumb { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-heading); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 28px; }
+        .gallery-breadcrumb a { color: var(--color-text-muted); text-decoration: none; transition: var(--transition-smooth); }
+        .gallery-breadcrumb a:hover { color: var(--color-orange-glow); }
+        .gallery-breadcrumb i { width: 13px; height: 13px; }
+        .gallery-hero .section-header-max { max-width: 800px; margin: 0 auto; }
+
+        /* -------------------------------------------------------------
+           FILTER BAR
+           ------------------------------------------------------------- */
+        .filter-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin: 50px auto 0; max-width: 1100px; }
+        .filter-btn {
+            font-family: var(--font-heading); font-weight: 600; font-size: 0.78rem;
+            letter-spacing: 1.5px; text-transform: uppercase; color: var(--color-text-muted);
+            background: rgba(255, 255, 255, 0.03); border: var(--border-glass);
+            padding: 12px 26px; border-radius: 30px; cursor: pointer; transition: var(--transition-smooth);
+        }
+        .filter-btn:hover { color: var(--color-text-light); border-color: rgba(229, 109, 54, 0.3); }
+        .filter-btn.is-active {
+            color: var(--color-text-light);
+            background: linear-gradient(135deg, var(--color-orange), var(--color-orange-glow));
+            border-color: transparent;
+            box-shadow: 0 8px 25px rgba(193, 92, 46, 0.3);
+        }
+
+        /* -------------------------------------------------------------
+           GALLERY GRID  (contact-sheet styling)
+           ------------------------------------------------------------- */
+        .gallery-section { padding-top: 70px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+
+        .gallery-item { overflow: hidden; display: flex; flex-direction: column; z-index: 2; cursor: pointer; }
+        .gallery-item:hover { transform: translateY(-8px); border-color: rgba(229, 109, 54, 0.3); box-shadow: 0 25px 50px rgba(229, 109, 54, 0.15); }
+        .gallery-item.is-hidden { display: none; }
+
+        /* Sprocket-hole frame strip: a nod to the studio's film-editing roots */
+        .frame-strip { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: rgba(0,0,0,0.35); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .frame-holes { display: flex; gap: 6px; }
+        .frame-holes span { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.18); }
+        .frame-code { font-family: var(--font-heading); font-size: 0.68rem; letter-spacing: 2px; color: var(--color-text-muted); text-transform: uppercase; }
+        .frame-code b { color: var(--color-gold); font-weight: 700; }
+
+        .gallery-img-wrapper { position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: var(--bg-secondary); }
+        .gallery-img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1); display: block; }
+        .gallery-item:hover .gallery-img { transform: scale(1.08); }
+
+        .gallery-overlay-tag { position: absolute; bottom: 18px; left: 18px; z-index: 2; }
+        .gallery-project-tag { font-family: var(--font-heading); font-weight: 600; font-size: 0.68rem; color: var(--color-text-light); background: rgba(12, 8, 6, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); padding: 7px 16px; border-radius: 30px; letter-spacing: 1.5px; text-transform: uppercase; }
+
+        .gallery-expand-icon { position: absolute; top: 18px; right: 18px; width: 36px; height: 36px; border-radius: 50%; background: rgba(12,8,6,0.55); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0.8); transition: var(--transition-smooth); z-index: 2; }
+        .gallery-expand-icon i { width: 16px; height: 16px; color: var(--color-text-light); }
+        .gallery-item:hover .gallery-expand-icon { opacity: 1; transform: scale(1); }
+
+        .gallery-info { padding: 26px 28px 30px; z-index: 2; }
+        .gallery-item-title { font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem; margin-bottom: 8px; letter-spacing: -0.2px; }
+        .gallery-item-desc { color: var(--color-text-muted); font-size: 0.92rem; font-weight: 300; line-height: 1.65; }
+
+        .gallery-empty { text-align: center; color: var(--color-text-muted); padding: 60px 0; font-family: var(--font-heading); letter-spacing: 1px; display: none; }
+        .gallery-empty.is-visible { display: block; }
+
+        /* -------------------------------------------------------------
+           LIGHTBOX
+           ------------------------------------------------------------- */
+        .lightbox-overlay {
+            position: fixed; inset: 0; z-index: 2000; background: rgba(8, 5, 4, 0.92);
+            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+            padding: 40px;
+        }
+        .lightbox-overlay.is-open { opacity: 1; pointer-events: all; }
+
+        .lightbox-content { max-width: 1100px; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 24px; transform: scale(0.96); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .lightbox-overlay.is-open .lightbox-content { transform: scale(1); }
+
+        .lightbox-media-wrap { width: 100%; max-height: 68vh; border-radius: 18px; overflow: hidden; background: var(--bg-secondary); border: var(--border-glass); box-shadow: 0 30px 70px rgba(0,0,0,0.6); }
+        .lightbox-media-wrap img, .lightbox-media-wrap video { width: 100%; max-height: 68vh; object-fit: contain; display: block; margin: 0 auto; background: #000; }
+
+        .lightbox-caption { text-align: center; max-width: 640px; }
+        .lightbox-frame-code { font-family: var(--font-heading); font-size: 0.72rem; letter-spacing: 3px; color: var(--color-orange-glow); text-transform: uppercase; margin-bottom: 10px; }
+        .lightbox-title { font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; margin-bottom: 10px; }
+        .lightbox-desc { color: var(--color-text-muted); font-size: 0.98rem; font-weight: 300; line-height: 1.7; }
+
+        .lightbox-close { position: absolute; top: 28px; right: 32px; width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.05); border: var(--border-glass); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth); }
+        .lightbox-close:hover { background: rgba(229, 109, 54, 0.15); border-color: rgba(229, 109, 54, 0.3); transform: rotate(90deg); }
+        .lightbox-close i { width: 20px; height: 20px; color: var(--color-text-light); }
+
+        .lightbox-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,0.05); border: var(--border-glass); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth); }
+        .lightbox-nav-btn:hover { background: linear-gradient(135deg, var(--color-orange), var(--color-orange-glow)); border-color: transparent; }
+        .lightbox-nav-btn i { width: 22px; height: 22px; color: var(--color-text-light); }
+        .lightbox-prev { left: 24px; }
+        .lightbox-next { right: 24px; }
+
+        /* -------------------------------------------------------------
+           CTA STRIP
+           ------------------------------------------------------------- */
+        .gallery-cta { display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center; margin-top: 100px; padding: 70px 50px; }
+        .gallery-cta .btn-actions { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+        /* -------------------------------------------------------------
+           FOOTER
+           ------------------------------------------------------------- */
+        .footer { background: rgba(12, 8, 6, 0.95); border-top: var(--border-glass); padding: 120px 50px 50px; position: relative; z-index: 10; }
+        .footer-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 80px; margin-bottom: 90px; }
+        .footer-brand-col { max-width: 400px; }
+        .footer-logo-img { height: 90px; width: auto; display: block; margin-bottom: 25px; }
+        .footer-desc { color: var(--color-text-muted); font-weight: 300; font-size: 0.98rem; line-height: 1.7; }
+        .footer-title { font-family: var(--font-heading); font-weight: 700; font-size: 1.15rem; margin-bottom: 28px; letter-spacing: 0.5px; }
+        .footer-links { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+        .footer-links a { color: var(--color-text-muted); text-decoration: none; font-size: 0.98rem; transition: var(--transition-smooth); opacity: 0.8; display: inline-block; }
+        .footer-links a:hover { color: var(--color-orange-glow); opacity: 1; transform: translateX(4px); }
+        .footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 45px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+        .footer-bottom p { font-size: 0.88rem; color: var(--color-text-muted); }
+        .footer-bottom-links { display: flex; gap: 35px; }
+        .footer-bottom-links a { font-size: 0.88rem; color: var(--color-text-muted); text-decoration: none; transition: var(--transition-smooth); }
+        .footer-bottom-links a:hover { color: var(--color-text-light); }
+
+        /* -------------------------------------------------------------
+           SHLOKA BANNER
+           ------------------------------------------------------------- */
+        .shloka-banner { text-align: center; font-family: var(--font-serif); font-style: italic; color: var(--color-text-muted); font-size: 0.85rem; line-height: 2; padding: 30px 20px; background: var(--bg-primary); border-top: 1px solid rgba(255,255,255,0.04); }
+
+        /* -------------------------------------------------------------
+           RESPONSIVE
+           ------------------------------------------------------------- */
+        @media (max-width: 1200px) {
+            .nav-container { padding: 0 30px; }
+            .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 50px; }
+        }
+
+        @media (max-width: 900px) {
+            .nav-menu { display: none; flex-direction: column; position: fixed; top: 0; right: -100%; width: 70%; height: 100vh; background: rgba(12, 8, 6, 0.98); backdrop-filter: blur(20px); border-left: var(--border-glass); padding: 120px 40px; gap: 35px; z-index: 105; transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+            .nav-menu.active { right: 0; }
+            .mobile-menu-toggle { display: flex; }
+            .footer-grid { grid-template-columns: 1fr 1fr; gap: 50px; }
+            .lightbox-nav-btn { width: 42px; height: 42px; }
+            .lightbox-prev { left: 8px; }
+            .lightbox-next { right: 8px; }
+        }
+
+        @media (max-width: 768px) {
+            section { padding: 100px 24px; }
+            .gallery-hero { padding: 150px 24px 40px; }
+            .gallery-grid { grid-template-columns: 1fr; gap: 26px; }
+            .gallery-cta { padding: 50px 24px; }
+            .gallery-cta .btn-actions { flex-direction: column; width: 100%; }
+            .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+            .footer-grid { grid-template-columns: 1fr; gap: 50px; }
+            .lightbox-overlay { padding: 20px; }
+            .lightbox-close { top: 16px; right: 16px; }
+        }
+    </style>
+</head>
+<body class="is-loading">
+
+    <noscript><style>#preloader { display: none !important; } body.is-loading { overflow: auto !important; height: auto !important; }</style></noscript>
+
+    <div id="preloader">
+        <div class="preloader-inner">
+            <div class="preloader-mark">
+                <span class="preloader-tag">Design Studio</span>
+                <span class="preloader-word"><span>RAW</span>CANVAS</span>
+                <span class="preloader-tag">Creative</span>
+            </div>
+            <div class="preloader-bar-track">
+                <div class="preloader-bar-fill" id="js-preloader-fill"></div>
+            </div>
+            <div class="preloader-count"><span id="js-preloader-count">0</span>%</div>
+        </div>
+    </div>
+
+    <div class="film-grain"></div>
+    <div class="grid-canvas-overlay"></div>
+    <div class="scroll-progress" id="js-scroll-bar"></div>
+
+    <div class="custom-cursor"></div>
+    <div class="custom-cursor-follower"></div>
+
+    <canvas id="canvas-3d"></canvas>
+
+    <!-- Navbar -->
+    <header class="navbar" id="js-navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo-link">
+                <img src="assets/logo.png" alt="Raw Canvas Creative — Design Studio" class="site-logo">
+            </a>
+
+            <nav class="nav-menu" id="js-nav-menu">
+                <a href="index.html#services" class="nav-item">Services</a>
+                <a href="index.html#work" class="nav-item">Our Work</a>
+                <a href="gallery.html" class="nav-item is-active">Full Gallery</a>
+                <a href="index.html#about" class="nav-item">Philosophy</a>
+                <a href="index.html#reviews" class="nav-item">Reviews</a>
+                <a href="index.html#contact" class="nav-btn">Start Project</a>
+            </nav>
+
+            <button class="mobile-menu-toggle" id="js-menu-toggle" aria-label="Toggle Navigation">
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Gallery Hero -->
+    <section class="gallery-hero">
+        <div class="section-container section-header-max">
+            <div class="gallery-breadcrumb">
+                <a href="index.html">Home</a>
+                <i data-lucide="chevron-right"></i>
+                <span>Full Gallery</span>
+            </div>
+            <span class="section-tag">THE COMPLETE ARCHIVE</span>
+            <h1 class="section-title">Every Frame We've Shot, Built &amp; Branded</h1>
+            <p class="section-desc">A contact sheet of the studio's full body of work — websites, films, identities, and apps. Filter by discipline, or click any frame to view it full-screen.</p>
+
+            <div class="filter-bar" id="js-filter-bar">
+                <button type="button" class="filter-btn is-active" data-filter="all">All Work</button>
+                <button type="button" class="filter-btn" data-filter="Development">Development</button>
+                <button type="button" class="filter-btn" data-filter="Cinematography">Cinematography</button>
+                <button type="button" class="filter-btn" data-filter="Branding">Branding</button>
+                <button type="button" class="filter-btn" data-filter="App Development">App Development</button>
+                <button type="button" class="filter-btn" data-filter="Photography">Graphic Design</button>
+                <button type="button" class="filter-btn" data-filter="Social Media">Social Media</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Grid -->
+    <section class="gallery-section">
+        <div class="section-container">
+            <div class="gallery-grid" id="js-gallery-grid">
+
+                <div class="gallery-item glass-card" data-category="Development" data-index="0">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-001</b> · DEV</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/portfolio_web_design.jpg" alt="A Strong & Creative — editorial café website">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Development</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">A Strong &amp; Creative</h3>
+                        <p class="gallery-item-desc">A warm, editorial website design built to make every cup feel like an experience.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Cinematography" data-index="1">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-002</b> · FILM</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/video_editing.jpg" alt="Experience — cinematic street portraiture">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Cinematography</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Experience</h3>
+                        <p class="gallery-item-desc">Cinematic street portraiture, heavy neon color-grading, and narrative sound design.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Branding" data-index="2">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-003</b> · BRND</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/portfolio_social_media.jpg" alt="We Know What You Want — social growth campaign">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Branding</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">We Know What You Want</h3>
+                        <p class="gallery-item-desc">Bold reel cover art and a growth strategy that generated millions of organic impressions.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="App Development" data-index="3">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-004</b> · APP</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/portfolio_app_design.jpg" alt="Modern & Classic — transit app UI">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">App Development</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Modern &amp; Classic</h3>
+                        <p class="gallery-item-desc">A full-flow transit app UI: live tracking, ticketing, passes, and real-time alerts.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Photography" data-index="4">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-005</b> · PHOTO</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/gallery_photography_01.jpg" alt="Golden Hour Editorial — fashion lookbook">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Photography</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Golden Hour Editorial</h3>
+                        <p class="gallery-item-desc">An on-location fashion lookbook shot at magic hour, graded warm and soft.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Branding" data-index="5">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-006</b> · BRND</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/gallery_branding_01.jpg" alt="The Roastery Mark — coffee brand identity">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Branding</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">The Roastery Mark</h3>
+                        <p class="gallery-item-desc">A full identity system for a specialty coffee roaster: logotype, packaging, and signage.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Social Media" data-index="6">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-007</b> · SOC</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/gallery_social_01.jpg" alt="Feed as Film Strip — social content system">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Social Media</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Feed as Film Strip</h3>
+                        <p class="gallery-item-desc">A content calendar designed to read as one continuous reel across the grid.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Development" data-index="7">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-008</b> · DEV</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/gallery_dev_01.png" alt="Glasshouse Studio — architecture site with 3D scroll">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Development</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Glasshouse Studio</h3>
+                        <p class="gallery-item-desc">An architecture studio site with scroll-driven 3D walkthroughs of finished builds.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Cinematography" data-index="8">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-009</b> · FILM</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/gallery_cinema_01.jpg" alt="Night Market — documentary short">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Cinematography</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Night Market</h3>
+                        <p class="gallery-item-desc">A handheld documentary short following street vendors after dark, shot on primes.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="App Development" data-index="9">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-010</b> · APP</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/gallery_app_01.jpg" alt="Pulse Fitness — workout tracking app">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">App Development</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Pulse Fitness</h3>
+                        <p class="gallery-item-desc">A workout tracking app with live heart-rate overlays and adaptive session plans.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Photography" data-index="10">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-011</b> · PHOTO</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/gallery_photography_02.jpg" alt="Concrete & Light — brutalist architecture series">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Photography</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Concrete &amp; Light</h3>
+                        <p class="gallery-item-desc">A high-contrast black-and-white study of brutalist architecture around the city.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-item glass-card" data-category="Branding" data-index="11">
+                    <div class="frame-strip">
+                        <span class="frame-code"><b>RC-012</b> · BRND</span>
+                        <div class="frame-holes"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="gallery-img-wrapper">
+                        <img class="gallery-img" src="assets/gallery_branding_02.jpg" alt="Northbound Outfitters — outdoor apparel rebrand">
+                        <span class="gallery-overlay-tag"><span class="gallery-project-tag">Branding</span></span>
+                        <div class="gallery-expand-icon"><i data-lucide="expand"></i></div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3 class="gallery-item-title">Northbound Outfitters</h3>
+                        <p class="gallery-item-desc">An outdoor apparel rebrand built on rugged type and a topographic motif.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <p class="gallery-empty" id="js-gallery-empty">No frames in this reel yet — try another filter.</p>
+        </div>
+    </section>
+
+    <!-- CTA Strip -->
+    <section class="gallery-cta">
+        <span class="section-tag">LIKE WHAT YOU SEE</span>
+        <h2 class="section-title" style="font-size: clamp(1.8rem, 3.5vw, 2.6rem);">Let's Add Your Project To The Reel</h2>
+        <div class="btn-actions">
+            <a href="index.html#contact" class="btn-primary">Start A Project <i data-lucide="arrow-up-right"></i></a>
+            <a href="index.html" class="btn-secondary"><i data-lucide="arrow-left"></i> Back To Home</a>
+        </div>
+    </section>
+
+    <!-- Lightbox -->
+    <div class="lightbox-overlay" id="js-lightbox">
+        <button type="button" class="lightbox-close" id="js-lightbox-close" aria-label="Close"><i data-lucide="x"></i></button>
+        <button type="button" class="lightbox-nav-btn lightbox-prev" id="js-lightbox-prev" aria-label="Previous"><i data-lucide="chevron-left"></i></button>
+        <button type="button" class="lightbox-nav-btn lightbox-next" id="js-lightbox-next" aria-label="Next"><i data-lucide="chevron-right"></i></button>
+        <div class="lightbox-content">
+            <div class="lightbox-media-wrap" id="js-lightbox-media"></div>
+            <div class="lightbox-caption">
+                <div class="lightbox-frame-code" id="js-lightbox-code"></div>
+                <h3 class="lightbox-title" id="js-lightbox-title"></h3>
+                <p class="lightbox-desc" id="js-lightbox-desc"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="section-container">
+            <div class="footer-grid">
+                <div class="footer-brand-col">
+                    <img src="assets/logo.png" alt="Raw Canvas Creative — Design Studio" class="footer-logo-img">
+                    <p class="footer-desc">
+                        Engineering immersive interactive spaces, cinematic visual storytelling, and high-impact social campaigns.
+                    </p>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4 class="footer-title">Navigation</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html#services">Services</a></li>
+                        <li><a href="gallery.html">Full Gallery</a></li>
+                        <li><a href="index.html#about">Philosophy</a></li>
+                        <li><a href="index.html#contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4 class="footer-title">Services</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html#services">3D Web Design</a></li>
+                        <li><a href="index.html#services">Video Production</a></li>
+                        <li><a href="index.html#services">Social Growth</a></li>
+                        <li><a href="index.html#services">Brand Strategy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4 class="footer-title">Socials</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://www.instagram.com/rawcanvas.43/?hl=en" target="_blank" rel="noopener">Instagram</a></li>
+                        <li><a href="https://www.facebook.com/rawcanvas.43" target="_blank" rel="noopener">Facebook</a></li>
+                        <li><a href="https://wa.me/+91 8375033476" target="_blank" rel="noopener">WhatsApp</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Raw Canvas Creative. All rights reserved. Crafted with precision.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+
+            window.scrollTo(0, 0);
+
+            /* PRELOADER */
+            (function initPreloader() {
+                const preloader = document.getElementById('preloader');
+                const fill = document.getElementById('js-preloader-fill');
+                const countEl = document.getElementById('js-preloader-count');
+                if (!preloader) return;
+
+                let displayed = 0;
+                let target = 0;
+                let finished = false;
+
+                function setTarget(v) { target = Math.max(target, Math.min(v, 100)); }
+
+                function tick() {
+                    displayed += (target - displayed) * 0.12;
+                    if (target - displayed < 0.4) displayed = target;
+                    const shown = Math.round(displayed);
+                    if (fill) fill.style.width = shown + '%';
+                    if (countEl) countEl.textContent = shown;
+
+                    if (displayed >= 100) { finishPreloader(); return; }
+                    requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+
+                const creepTimer = setInterval(() => {
+                    if (finished) { clearInterval(creepTimer); return; }
+                    setTarget(target + (100 - target) * 0.06);
+                }, 180);
+
+                window.addEventListener('load', () => setTarget(100));
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(() => setTarget(Math.max(target, 92)));
+                }
+
+                setTimeout(() => setTarget(97), 1800);
+                setTimeout(() => setTarget(100), 3200);
+
+                function finishPreloader() {
+                    if (finished) return;
+                    finished = true;
+                    clearInterval(creepTimer);
+
+                    const reveal = () => {
+                        document.body.classList.remove('is-loading');
+                        preloader.remove();
+                        window.scrollTo(0, 0);
+                        if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+                    };
+
+                    if (typeof gsap !== 'undefined') {
+                        gsap.to(preloader, { opacity: 0, duration: 0.7, ease: 'power2.inOut', delay: 0.15, onComplete: reveal });
+                    } else {
+                        preloader.style.transition = 'opacity 0.6s ease';
+                        preloader.style.opacity = '0';
+                        setTimeout(reveal, 650);
+                    }
+                }
+            })();
+
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            /* SCROLL PROGRESS + NAVBAR SHADOW */
+            const progressBar = document.getElementById('js-scroll-bar');
+            const navbarElement = document.getElementById('js-navbar');
+            window.addEventListener('scroll', () => {
+                const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolledPercent = (winScroll / (height || 1)) * 100;
+                if (progressBar) progressBar.style.width = scrolledPercent + "%";
+                if (navbarElement) {
+                    if (winScroll > 40) navbarElement.classList.add('scrolled');
+                    else navbarElement.classList.remove('scrolled');
+                }
+            });
+
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                gsap.registerPlugin(ScrollTrigger);
+            }
+
+            /* CUSTOM CURSOR */
+            const cursor = document.querySelector('.custom-cursor');
+            const follower = document.querySelector('.custom-cursor-follower');
+            if (cursor && follower && typeof gsap !== 'undefined') {
+                gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+                gsap.set(follower, { xPercent: -50, yPercent: -50 });
+
+                const setCursorX = gsap.quickTo(cursor, "x", { duration: 0.05, ease: "power3.out" });
+                const setCursorY = gsap.quickTo(cursor, "y", { duration: 0.05, ease: "power3.out" });
+                const setFollowerX = gsap.quickTo(follower, "x", { duration: 0.25, ease: "power3.out" });
+                const setFollowerY = gsap.quickTo(follower, "y", { duration: 0.25, ease: "power3.out" });
+
+                window.addEventListener('mousemove', (e) => {
+                    setCursorX(e.clientX); setCursorY(e.clientY);
+                    setFollowerX(e.clientX); setFollowerY(e.clientY);
+                });
+
+                function bindHoverTargets() {
+                    document.querySelectorAll('a, button, input, select, textarea, .gallery-item, .logo-link, .filter-btn').forEach(target => {
+                        target.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+                        target.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+                        target.addEventListener('click', () => document.body.classList.remove('cursor-hover'));
+                    });
+                }
+                bindHoverTargets();
+            }
+
+            /* DYNAMIC GLASS CARD LIGHT */
+            document.querySelectorAll('.glass-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                });
+            });
+
+            /* MOBILE MENU */
+            const menuToggle = document.getElementById('js-menu-toggle');
+            const navMenu = document.getElementById('js-nav-menu');
+            if (menuToggle && navMenu) {
+                menuToggle.addEventListener('click', () => {
+                    menuToggle.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                    const bars = menuToggle.querySelectorAll('.bar');
+                    if (menuToggle.classList.contains('active')) {
+                        gsap.to(bars[0], { rotate: 45, y: 8, duration: 0.35 });
+                        gsap.to(bars[1], { rotate: -45, y: -8, duration: 0.35 });
+                        gsap.to(navMenu, { display: 'flex', opacity: 1, duration: 0.35 });
+                    } else {
+                        gsap.to(bars[0], { rotate: 0, y: 0, duration: 0.35 });
+                        gsap.to(bars[1], { rotate: 0, y: 0, duration: 0.35 });
+                        gsap.to(navMenu, { opacity: 0, duration: 0.35, onComplete: () => { navMenu.style.display = ''; } });
+                    }
+                });
+                navMenu.querySelectorAll('a').forEach(item => {
+                    item.addEventListener('click', () => {
+                        if (window.innerWidth <= 900) menuToggle.click();
+                    });
+                });
+            }
+
+            /* -------------------------------------------------------------
+            GALLERY FILTER
+               ------------------------------------------------------------- */
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const galleryItems = Array.from(document.querySelectorAll('.gallery-item'));
+            const emptyState = document.getElementById('js-gallery-empty');
+
+            function applyFilter(category) {
+                let visibleCount = 0;
+                galleryItems.forEach(item => {
+                    const matches = category === 'all' || item.getAttribute('data-category') === category;
+                    item.classList.toggle('is-hidden', !matches);
+                    if (matches) visibleCount++;
+                });
+                if (emptyState) emptyState.classList.toggle('is-visible', visibleCount === 0);
+            }
+
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('is-active'));
+                    btn.classList.add('is-active');
+                    applyFilter(btn.getAttribute('data-filter'));
+                });
+            });
+
+            /* -------------------------------------------------------------
+            LIGHTBOX
+               ------------------------------------------------------------- */
+            const lightbox = document.getElementById('js-lightbox');
+            const lightboxMedia = document.getElementById('js-lightbox-media');
+            const lightboxCode = document.getElementById('js-lightbox-code');
+            const lightboxTitle = document.getElementById('js-lightbox-title');
+            const lightboxDesc = document.getElementById('js-lightbox-desc');
+            const lightboxClose = document.getElementById('js-lightbox-close');
+            const lightboxPrev = document.getElementById('js-lightbox-prev');
+            const lightboxNext = document.getElementById('js-lightbox-next');
+
+            let currentIndex = 0;
+
+            function visibleItems() {
+                return galleryItems.filter(item => !item.classList.contains('is-hidden'));
+            }
+
+            function openLightbox(item) {
+                const items = visibleItems();
+                currentIndex = items.indexOf(item);
+                renderLightbox(items);
+                lightbox.classList.add('is-open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function renderLightbox(items) {
+                const item = items[currentIndex];
+                if (!item) return;
+
+                const imgSrc = item.querySelector('.gallery-img').getAttribute('src');
+                const title = item.querySelector('.gallery-item-title').textContent;
+                const desc = item.querySelector('.gallery-item-desc').textContent;
+                const code = item.querySelector('.frame-code').textContent;
+
+                lightboxMedia.innerHTML = `<img src="${imgSrc}" alt="${title}">`;
+                lightboxCode.textContent = code;
+                lightboxTitle.textContent = title;
+                lightboxDesc.textContent = desc;
+            }
+
+            function closeLightbox() {
+                lightbox.classList.remove('is-open');
+                document.body.style.overflow = '';
+            }
+
+            function stepLightbox(delta) {
+                const items = visibleItems();
+                if (!items.length) return;
+                currentIndex = (currentIndex + delta + items.length) % items.length;
+                renderLightbox(items);
+            }
+
+            galleryItems.forEach(item => {
+                item.addEventListener('click', () => openLightbox(item));
+            });
+
+            if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+            if (lightboxPrev) lightboxPrev.addEventListener('click', () => stepLightbox(-1));
+            if (lightboxNext) lightboxNext.addEventListener('click', () => stepLightbox(1));
+
+            if (lightbox) {
+                lightbox.addEventListener('click', (e) => {
+                    if (e.target === lightbox) closeLightbox();
+                });
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (!lightbox.classList.contains('is-open')) return;
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') stepLightbox(-1);
+                if (e.key === 'ArrowRight') stepLightbox(1);
+            });
+
+            /* -------------------------------------------------------------
+            SCROLL-REVEAL FOR GRID ITEMS
+               ------------------------------------------------------------- */
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                gsap.from(".gallery-hero .gallery-breadcrumb, .gallery-hero .section-tag, .gallery-hero .section-title, .gallery-hero .section-desc, .filter-bar", {
+                    y: 30, opacity: 0, duration: 1, stagger: 0.1, ease: "power3.out"
+                });
+
+                gsap.from(".gallery-item", {
+                    scrollTrigger: { trigger: "#js-gallery-grid", start: "top 85%" },
+                    y: 50, opacity: 0, duration: 1, stagger: 0.08, ease: "power3.out"
+                });
+
+                gsap.from(".gallery-cta > *", {
+                    scrollTrigger: { trigger: ".gallery-cta", start: "top 85%" },
+                    y: 30, opacity: 0, duration: 1, stagger: 0.1, ease: "power3.out"
+                });
+            }
+
+            /* Reliability safety net: force-show anything stuck at opacity 0 */
+            setTimeout(() => {
+                document.querySelectorAll('.gallery-item, .gallery-hero *, .gallery-cta *').forEach(el => {
+                    if (parseFloat(getComputedStyle(el).opacity) === 0) {
+                        el.style.opacity = '1';
+                        el.style.transform = 'none';
+                    }
+                });
+            }, 2500);
+
+            /* -------------------------------------------------------------
+            THREE.JS AMBIENT PARTICLE BACKGROUND (shared with home page)
+               ------------------------------------------------------------- */
+            const canvas = document.getElementById('canvas-3d');
+            if (canvas && typeof THREE !== 'undefined') {
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+                camera.position.z = 28;
+
+                const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                function createCircleTexture() {
+                    const particleCanvas = document.createElement('canvas');
+                    particleCanvas.width = 32; particleCanvas.height = 32;
+                    const ctx = particleCanvas.getContext('2d');
+                    const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                    gradient.addColorStop(0.2, 'rgba(255, 230, 210, 0.85)');
+                    gradient.addColorStop(0.5, 'rgba(229, 109, 54, 0.5)');
+                    gradient.addColorStop(1, 'rgba(12, 8, 6, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, 32, 32);
+                    return new THREE.CanvasTexture(particleCanvas);
+                }
+
+                const particleCount = 3800;
+                const geometry = new THREE.BufferGeometry();
+                const initialPositions = [];
+                const positions = new Float32Array(particleCount * 3);
+                const colors = new Float32Array(particleCount * 3);
+
+                const colorPrimary = new THREE.Color('#C15C2E');
+                const colorGlow = new THREE.Color('#E96D36');
+                const colorGold = new THREE.Color('#F3A46B');
+
+                for (let i = 0; i < particleCount; i++) {
+                    const fraction = i / particleCount;
+                    const theta = fraction * Math.PI * 2 * 9;
+                    const u = (fraction - 0.5) * 50;
+                    const isStrandA = i % 2 === 0;
+                    const phaseShift = isStrandA ? 0 : Math.PI;
+                    const amplitude = Math.sin(fraction * Math.PI) * 7.5;
+                    const x = u;
+                    const y = Math.sin(theta + phaseShift) * amplitude;
+                    const z = Math.cos(theta + phaseShift) * amplitude;
+
+                    positions[i * 3] = x; positions[i * 3 + 1] = y; positions[i * 3 + 2] = z;
+                    initialPositions.push({ x, y, z, theta, phaseShift, amplitude, fraction });
+
+                    let colorMix;
+                    const rng = Math.random();
+                    if (rng < 0.4) colorMix = colorPrimary.clone().lerp(colorGlow, Math.random());
+                    else colorMix = colorGlow.clone().lerp(colorGold, Math.random());
+
+                    colors[i * 3] = colorMix.r; colors[i * 3 + 1] = colorMix.g; colors[i * 3 + 2] = colorMix.b;
+                }
+
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({
+                    size: 0.48, vertexColors: true, transparent: true, opacity: 0.9,
+                    map: createCircleTexture(), depthWrite: false, blending: THREE.AdditiveBlending
+                });
+
+                const points = new THREE.Points(geometry, material);
+                scene.add(points);
+
+                const dustCount = 900;
+                const dustGeometry = new THREE.BufferGeometry();
+                const dustPositions = new Float32Array(dustCount * 3);
+                for (let i = 0; i < dustCount; i++) {
+                    dustPositions[i * 3] = (Math.random() - 0.5) * 85;
+                    dustPositions[i * 3 + 1] = (Math.random() - 0.5) * 45;
+                    dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 45;
+                }
+                dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+
+                const dustMaterial = new THREE.PointsMaterial({
+                    size: 0.18, color: 0xF3A46B, transparent: true, opacity: 0.4,
+                    map: createCircleTexture(), depthWrite: false
+                });
+
+                const dustPoints = new THREE.Points(dustGeometry, dustMaterial);
+                scene.add(dustPoints);
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                });
+
+                let mouseX = 0, mouseY = 0;
+                window.addEventListener('mousemove', (e) => {
+                    mouseX = (e.clientX / window.innerWidth - 0.5) * 0.5;
+                    mouseY = (e.clientY / window.innerHeight - 0.5) * 0.5;
+                });
+
+                let scrollY = 0;
+                window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+
+                const clock = new THREE.Clock();
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    const elapsedTime = clock.getElapsedTime();
+
+                    const posAttr = points.geometry.attributes.position;
+                    for (let i = 0; i < particleCount; i++) {
+                        const data = initialPositions[i];
+                        const waveDeformation = Math.sin(data.x * 0.18 + elapsedTime * 1.5) * 1.2 * data.fraction;
+                        const secondaryRipple = Math.cos(data.x * 0.08 - elapsedTime * 0.8) * 0.8 * (1 - data.fraction);
+                        posAttr.setY(i, data.y + waveDeformation);
+                        posAttr.setZ(i, data.z + secondaryRipple);
+                    }
+                    posAttr.needsUpdate = true;
+
+                    points.rotation.y = elapsedTime * 0.045;
+                    points.rotation.x = Math.sin(elapsedTime * 0.1) * 0.08;
+                    dustPoints.rotation.y = -elapsedTime * 0.015;
+                    dustPoints.rotation.x = elapsedTime * 0.012;
+
+                    gsap.to(points.rotation, { y: points.rotation.y + mouseX * 0.4, x: points.rotation.x + mouseY * 0.4, duration: 1.8, ease: "power2.out" });
+
+                    const scrollFraction = scrollY / (document.documentElement.scrollHeight - window.innerHeight || 1);
+                    gsap.to(camera.position, { z: 28 - (scrollFraction * 15), y: -scrollFraction * 20, duration: 1.2, ease: "power1.out" });
+                    gsap.to(points.rotation, { z: scrollFraction * Math.PI * 1.8, duration: 1.4, ease: "power1.out" });
+
+                    renderer.render(scene, camera);
+                }
+                animate();
+            }
+        });
+    </script>
+
+    <!-- Bottom Mantra Section -->
+    <div class="shloka-banner">
+        करचरण कृतं वाक्कायजं कर्मजं वा ।<br>
+        श्रवणनयनजं वा मानसं वापराधं ।<br>
+        विहितमविहितं वा सर्वमेतत्क्षमस्व ।<br>
+        जय जय करुणाब्धे श्रीमहादेव शम्भो ॥
+    </div>
+</body>
+</html>
