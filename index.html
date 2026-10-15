@@ -10,7 +10,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RawCanvas Creative</title>
+    <title>RawCanvasCreative.com</title>
     <link rel="icon" type="image/png" href="logo.png">
     <meta name="description" content="Raw Canvas Creative is a premium digital agency specializing in cinematic 3D websites, professional photo & video editing, and social media management. We turn raw ideas into digital masterpieces.">
     
@@ -1312,14 +1312,32 @@
             font-weight: 300;
             letter-spacing: 0.5px;
             opacity: 0.7;
+            margin-top: auto;
+            padding-top: 8px;
         }
 
         .reviews-empty-state {
             grid-column: 1 / -1;
             text-align: center;
-            padding: 40px;
+            padding: 56px 36px;
             color: var(--color-text-muted);
             font-weight: 300;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(20, 14, 12, 0.35);
+            border: 1px dashed rgba(229, 109, 54, 0.25);
+            border-radius: 16px;
+        }
+
+        .reviews-empty-icon {
+            width: 40px;
+            height: 40px;
+            color: var(--color-orange);
+            margin-bottom: 6px;
+            opacity: 0.9;
         }
 
         /* Review submission form card */
@@ -1387,64 +1405,7 @@
             margin-bottom: 4px;
         }
 
-        /* Admin moderation panel */
-        .review-admin-panel {
-            margin-top: 70px;
-            padding-top: 50px;
-            border-top: 1px dashed rgba(229, 109, 54, 0.25);
-        }
 
-        .admin-panel-header {
-            text-align: center;
-            max-width: 650px;
-            margin: 0 auto 40px;
-        }
-
-        .admin-review-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
-            margin-bottom: 30px;
-        }
-
-        .admin-review-row {
-            padding: 28px 26px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .admin-review-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 6px;
-        }
-
-        .admin-review-actions .btn-secondary {
-            padding: 10px 22px;
-            font-size: 0.75rem;
-        }
-
-        .review-admin-code {
-            max-width: 700px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .review-admin-code-text {
-            font-family: 'Courier New', monospace;
-            font-size: 0.82rem;
-            white-space: pre;
-            resize: vertical;
-        }
-
-        .review-admin-code .btn-secondary {
-            align-self: flex-start;
-            padding: 12px 28px;
-            cursor: pointer;
-        }
 
         /* Bottom Shloka Banner Styling */
         .shloka-banner {
@@ -1990,26 +1951,27 @@
                 <span class="section-tag">CLIENT LOVE</span>
                 <h2 class="section-title">What Our Clients Say</h2>
                 <div class="reviews-summary">
-                    <span class="reviews-summary-score" id="reviews-avg-score">5.0</span>
+                    <span class="reviews-summary-score" id="reviews-avg-score">—</span>
                     <div class="reviews-summary-meta">
-                        <div class="star-row" id="reviews-avg-stars">4.8</div>
-                        <div class="reviews-summary-count" id="reviews-count">Based on 5 reviews</div>
+                        <div class="star-row" id="reviews-avg-stars"></div>
+                        <div class="reviews-summary-count" id="reviews-count">No reviews yet — be the first!</div>
                     </div>
                 </div>
                 <p class="section-desc">Real feedback from real clients we've turned raw ideas into digital masterpieces for.</p>
             </div>
 
             <div class="reviews-layout">
-                <!-- Review Cards Grid: publicly visible reviews only (seedReviews in the code) -->
+                <!-- Review Cards Grid: publicly visible reviews only -->
                 <div class="reviews-list" id="reviews-list">
-                    <!-- Rendered by JS from the seedReviews array -->
+                    <!-- Rendered by JS -->
                 </div>
 
                 <!-- Write a Review Form -->
                 <div class="review-form-card glass-card">
                     <h3 class="review-form-title">Share Your Experience</h3>
                     <p class="review-form-subtitle">Worked with us? We'd love to hear about it.</p>
-                    <form id="review-form" novalidate>
+                    <!-- Form Link Added via action and method -->
+                    <form id="review-form" action="https://formspree.io/f/meaoojgy" method="POST" novalidate>
                         <div class="form-group">
                             <label class="form-label">Your Rating</label>
                             <div class="star-input" id="star-input" role="radiogroup" aria-label="Rating">
@@ -2022,15 +1984,15 @@
                         </div>
                         <div class="form-group">
                             <label for="review-name" class="form-label">Full Name</label>
-                            <input type="text" id="review-name" name="review-name" class="form-input" placeholder="Jane Doe" required>
+                            <input type="text" id="review-name" name="name" class="form-input" placeholder="Jane Doe" required>
                         </div>
                         <div class="form-group">
                             <label for="review-role" class="form-label">Company / Role</label>
-                            <input type="text" id="review-role" name="review-role" class="form-input" placeholder="Founder, Vellum Studio">
+                            <input type="text" id="review-role" name="role" class="form-input" placeholder="Founder, Vellum Studio">
                         </div>
                         <div class="form-group">
                             <label for="review-text" class="form-label">Your Review</label>
-                            <textarea id="review-text" name="review-text" class="form-input" rows="4" placeholder="Tell us how the project went..." required></textarea>
+                            <textarea id="review-text" name="review" class="form-input" rows="4" placeholder="Tell us how the project went..." required></textarea>
                         </div>
                         <p class="review-form-msg" id="review-form-msg"></p>
                         <button type="submit" class="btn-primary form-submit-btn">
@@ -2040,20 +2002,7 @@
                 </div>
             </div>
 
-            <!-- Admin Moderation Panel: hidden unless ?admin=true is in the URL -->
-            <div class="review-admin-panel" id="review-admin-panel" style="display:none;">
-                <div class="admin-panel-header">
-                    <span class="section-tag">ADMIN ONLY</span>
-                    <h3 class="review-form-title">Pending Review Submissions</h3>
-                    <p class="review-form-subtitle">Approve to generate code you can paste into the seedReviews array. Reject to discard.</p>
-                </div>
-                <div class="admin-review-list" id="review-admin-list"></div>
-                <div class="review-admin-code" id="review-admin-code" style="display:none;">
-                    <label class="form-label">Paste this into <code>seedReviews</code> in the code, then re-upload the file</label>
-                    <textarea class="form-input review-admin-code-text" id="review-admin-code-text" rows="6" readonly></textarea>
-                    <button type="button" class="btn-secondary" id="review-admin-copy-btn">Copy Code</button>
-                </div>
-            </div>
+
         </div>
     </section>
 
@@ -2088,7 +2037,7 @@
                 
                 <div class="contact-form-col">
                     <!-- Form Link Added via action and method -->
-                    <form class="contact-form glass-card" id="agency-contact-form" action="https://formspree.io/f/mlgqakpa" method="POST">
+                    <form class="contact-form glass-card" id="agency-contact-form" action="https://formspree.io/f/mnpnnavv" method="INQUIRIES">
                         <div class="form-group">
                             <label for="name" class="form-label">Full Name</label>
                             <input type="text" id="name" name="name" class="form-input" placeholder="John Doe" required>
@@ -2168,9 +2117,9 @@
                 <div class="footer-links-col">
                     <h4 class="footer-title">Socials</h4>
                     <ul class="footer-links">
-                        <li><a href="https://www.instagram.com/rawcanvas.43/?hl=en" target="_blank" rel="noopener">Instagram</a></li>
-                        <li><a href="https://www.facebook.com/rawcanvas.43" target="_blank" rel="noopener">Facebook</a></li>
-                        <li><a href="https://wa.me/+91 8375033476" target="_blank" rel="noopener">WhatsApp</a></li>
+                        <li><a href="https://www.instagram.com/rawcanvas.creative" target="_blank" rel="noopener">Instagram</a></li>
+                        <li><a href="https://www.facebook.com/rawcanvas.creative" target="_blank" rel="noopener">Facebook</a></li>
+                        <li><a href="https://wa.me/+918375033476" target="_blank" rel="noopener">WhatsApp</a></li>
                     </ul>
                 </div>
             </div>
@@ -2542,42 +2491,13 @@
             }
 
             /* -------------------------------------------------------------
-            CLIENT REVIEW SYSTEM
-               ------------------------------------------------------------- */
-            (function () {
-                const ADMIN_CODE = 'rawcanvas-admin';
-                const PENDING_KEY = 'rawcanvas_reviews_pending';
+            CLIENT REVIEW SYSTEM (POWERED BY GOOGLE SHEETS)
+            ------------------------------------------------------------- */
+            const GOOGLE_SHEET_API = ''; // Paste your Google Apps Script Web App URL here
+            const clientReviews = [];     // Backup/offline reviews if needed
 
-                const seedReviews = [
-                    {
-                        name: 'Marcus Feld',
-                        role: 'CEO, Aethera SaaS',
-                        rating: 5,
-                        text: "Raw Canvas rebuilt our dashboard site and the 3D interactions alone have doubled our demo requests. Genuinely the best studio we've worked with.",
-                        date: '2026-05-14'
-                    },
-                    {
-                        name: 'Priya Nandan',
-                        role: 'Marketing Director, Vellum Studio',
-                        rating: 5,
-                        text: 'The social strategy and visual direction they built for us felt custom-made, not templated. Engagement tripled within two months.',
-                        date: '2026-04-02'
-                    },
-                    {
-                        name: 'Julian Cross',
-                        role: 'Founder, Nomad Travel App',
-                        rating: 4,
-                        text: 'Excellent craftsmanship on the app design and onboarding flow. Turnaround took a bit longer than planned, but the final quality made it worth it.',
-                        date: '2026-03-19'
-                    },
-                    {
-                        name: 'Sana Okoye',
-                        role: 'Creative Lead, Urban Odyssey',
-                        rating: 5,
-                        text: 'Their color grading and sound design gave our short film a cinematic weight we could never have achieved in-house. Already booking them again.',
-                        date: '2026-01-27'
-                    }
-                ];
+            (function () {
+                const STORAGE_KEY = 'rawcanvas_live_reviews';
 
                 const listEl = document.getElementById('reviews-list');
                 const avgScoreEl = document.getElementById('reviews-avg-score');
@@ -2587,36 +2507,27 @@
                 const starInput = document.getElementById('star-input');
                 const formMsg = document.getElementById('review-form-msg');
 
-                const adminPanel = document.getElementById('review-admin-panel');
-                const adminList = document.getElementById('review-admin-list');
-                const adminCodeBox = document.getElementById('review-admin-code');
-                const adminCodeText = document.getElementById('review-admin-code-text');
-                const adminCopyBtn = document.getElementById('review-admin-copy-btn');
-
                 if (!listEl || !form) return;
 
-                function loadPending() {
+                function loadStoredReviews() {
                     try {
-                        const raw = localStorage.getItem(PENDING_KEY);
+                        const raw = localStorage.getItem(STORAGE_KEY);
                         return raw ? JSON.parse(raw) : [];
                     } catch (e) {
                         return [];
                     }
                 }
 
-                function savePending(items) {
+                function saveStoredReviews(items) {
                     try {
-                        localStorage.setItem(PENDING_KEY, JSON.stringify(items));
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
                     } catch (e) { }
                 }
 
-                function initials(name) {
-                    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
-                }
-
                 function formatDate(iso) {
+                    if (!iso) return '';
                     const d = new Date(iso);
-                    if (isNaN(d)) return '';
+                    if (isNaN(d)) return String(iso);
                     return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                 }
 
@@ -2628,20 +2539,30 @@
                     return out;
                 }
 
+                function initials(name) {
+                    if (!name) return 'RC';
+                    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+                }
+
                 function buildCard(review) {
                     const card = document.createElement('div');
                     card.className = 'review-card glass-card';
-                    card.innerHTML = `
-                        <div class="review-card-top">
-                            <div class="review-author">
-                                <div class="review-avatar">${initials(review.name)}</div>
-                                <div>
-                                    <div class="review-author-name">${review.name}</div>
-                                    ${review.role ? `<div class="review-author-role">${review.role}</div>` : ''}
-                                </div>
+
+                    const authorMarkup = review.name ? `
+                        <div class="review-author">
+                            <div class="review-avatar">${initials(review.name)}</div>
+                            <div>
+                                <div class="review-author-name">${review.name}</div>
+                                ${review.role ? `<div class="review-author-role">${review.role}</div>` : ''}
                             </div>
                         </div>
-                        <div class="star-row">${starsMarkup(review.rating)}</div>
+                    ` : '';
+
+                    card.innerHTML = `
+                        <div class="review-card-top">
+                            ${authorMarkup}
+                            <div class="star-row">${starsMarkup(review.rating)}</div>
+                        </div>
                         <p class="review-text">${review.text}</p>
                         <span class="review-date">${formatDate(review.date)}</span>
                     `;
@@ -2654,22 +2575,53 @@
                     return div.innerHTML;
                 }
 
-                function renderReviews() {
-                    const all = [...seedReviews];
+                function renderReviews(reviewsList) {
+                    const all = reviewsList || [...loadStoredReviews(), ...clientReviews];
 
                     listEl.innerHTML = '';
                     if (all.length === 0) {
-                        listEl.innerHTML = '<div class="reviews-empty-state">Be the first to leave a review.</div>';
+                        listEl.innerHTML = `
+                            <div class="reviews-empty-state">
+                                <i data-lucide="message-square-plus" class="reviews-empty-icon"></i>
+                                <h4 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-text-light); font-weight: 600;">No reviews published yet</h4>
+                                <p style="font-size: 0.92rem; color: var(--color-text-muted); max-width: 340px; line-height: 1.6;">Be the first client to leave your thoughts. Choose a star rating and submit your review on the right.</p>
+                            </div>
+                        `;
+                        if (avgScoreEl) avgScoreEl.textContent = '—';
+                        if (avgStarsEl) avgStarsEl.innerHTML = starsMarkup(0);
+                        if (countEl) countEl.textContent = 'No reviews yet — be the first!';
                     } else {
                         all.forEach(r => listEl.appendChild(buildCard(r)));
+
+                        const avg = all.reduce((sum, r) => sum + Number(r.rating || 5), 0) / all.length;
+                        if (avgScoreEl) avgScoreEl.textContent = avg.toFixed(1);
+                        if (avgStarsEl) avgStarsEl.innerHTML = starsMarkup(Math.round(avg));
+                        if (countEl) countEl.textContent = `Based on ${all.length} ${all.length === 1 ? 'review' : 'reviews'}`;
                     }
 
-                    const avg = all.reduce((sum, r) => sum + r.rating, 0) / all.length;
-                    avgScoreEl.textContent = avg.toFixed(1);
-                    avgStarsEl.innerHTML = starsMarkup(Math.round(avg));
-                    countEl.textContent = `Based on 5 reviews`;
-
                     if (window.lucide) lucide.createIcons();
+                }
+
+                async function fetchGoogleSheetReviews() {
+                    if (!GOOGLE_SHEET_API) {
+                        renderReviews();
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(GOOGLE_SHEET_API);
+                        if (res.ok) {
+                            const sheetData = await res.json();
+                            if (Array.isArray(sheetData)) {
+                                saveStoredReviews(sheetData);
+                                renderReviews(sheetData);
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        // Fallback to cached reviews if offline
+                    }
+                    renderReviews();
                 }
 
                 let currentRating = 0;
@@ -2693,136 +2645,106 @@
                     starInput.addEventListener('mouseleave', () => setActiveStars(currentRating));
                 }
 
-                form.addEventListener('submit', (e) => {
+                form.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     formMsg.textContent = '';
 
-                    const name = document.getElementById('review-name').value.trim();
-                    const role = document.getElementById('review-role').value.trim();
-                    const text = document.getElementById('review-text').value.trim();
+                    const nameEl = document.getElementById('review-name');
+                    const roleEl = document.getElementById('review-role');
+                    const textEl = document.getElementById('review-text');
+
+                    const name = nameEl ? nameEl.value.trim() : '';
+                    const role = roleEl ? roleEl.value.trim() : '';
+                    const text = textEl ? textEl.value.trim() : '';
 
                     if (!currentRating) {
+                        formMsg.style.color = '#E96D36';
                         formMsg.textContent = 'Please select a star rating.';
                         return;
                     }
-                    if (!name || !text) {
-                        formMsg.textContent = 'Please fill in your name and review.';
+                    if (!name) {
+                        formMsg.style.color = '#E96D36';
+                        formMsg.textContent = 'Please enter your name.';
+                        return;
+                    }
+                    if (!text) {
+                        formMsg.style.color = '#E96D36';
+                        formMsg.textContent = 'Please write your review.';
                         return;
                     }
 
+                    const submitBtn = form.querySelector('.form-submit-btn');
+                    const originalBtnContent = submitBtn ? submitBtn.innerHTML : '';
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = `Posting Review <span class="loader-dots">...</span>`;
+                    }
+
                     const newReview = {
-                        id: (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`),
                         name: escapeHtml(name),
                         role: escapeHtml(role),
                         rating: currentRating,
                         text: escapeHtml(text),
-                        date: new Date().toISOString()
+                        date: new Date().toISOString().slice(0, 10)
                     };
 
-                    const pending = loadPending();
-                    pending.unshift(newReview);
-                    savePending(pending);
+                    // 1. Send email notification to Formspree
+                    try {
+                        const actionUrl = form.getAttribute('action') || 'https://formspree.io/f/meaoojgy';
+                        const formData = new FormData();
+                        formData.append('_subject', `New Client Review from ${name} (${currentRating}★) - Raw Canvas Creative`);
+                        formData.append('name', name);
+                        if (role) formData.append('role', role);
+                        formData.append('rating', `${currentRating} Stars`);
+                        formData.append('review', text);
+                        formData.append('date', newReview.date);
+
+                        await fetch(actionUrl, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'Accept': 'application/json' }
+                        });
+                    } catch (err) { }
+
+                    // 2. Automatically save row to Google Sheet if API URL configured
+                    if (GOOGLE_SHEET_API) {
+                        try {
+                            await fetch(GOOGLE_SHEET_API, {
+                                method: 'POST',
+                                mode: 'no-cors',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    name: name,
+                                    role: role,
+                                    rating: currentRating,
+                                    review: text,
+                                    date: newReview.date
+                                })
+                            });
+                        } catch (err) { }
+                    }
+
+                    // 3. Post automatically on the live page immediately
+                    const stored = loadStoredReviews();
+                    stored.unshift(newReview);
+                    saveStoredReviews(stored);
+                    renderReviews(stored);
 
                     form.reset();
                     currentRating = 0;
                     setActiveStars(0);
+
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnContent;
+                    }
+
                     formMsg.style.color = '#4CAF50';
-                    formMsg.textContent = "Thank you! Your review has been submitted and is awaiting approval before it's posted.";
+                    formMsg.textContent = 'Thank you! Your review has been posted.';
                     setTimeout(() => { formMsg.textContent = ''; formMsg.style.color = ''; }, 6000);
                 });
 
-                renderReviews();
-
-                function reviewToCodeSnippet(r) {
-                    const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                    return `    {\n        name: '${esc(r.name)}',\n        role: '${esc(r.role)}',\n        rating: ${r.rating},\n        text: '${esc(r.text)}',\n        date: '${r.date.slice(0, 10)}'\n    }`;
-                }
-
-                function renderAdminList() {
-                    if (!adminList) return;
-                    const pending = loadPending();
-
-                    adminList.innerHTML = '';
-                    if (pending.length === 0) {
-                        adminList.innerHTML = '<div class="reviews-empty-state">No pending submissions in this browser.</div>';
-                    } else {
-                        pending.forEach(r => {
-                            const row = document.createElement('div');
-                            row.className = 'admin-review-row glass-card';
-                            row.innerHTML = `
-                                <div class="review-card-top">
-                                    <div class="review-author">
-                                        <div class="review-avatar">${initials(r.name)}</div>
-                                        <div>
-                                            <div class="review-author-name">${r.name}</div>
-                                            ${r.role ? `<div class="review-author-role">${r.role}</div>` : ''}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="star-row">${starsMarkup(r.rating)}</div>
-                                <p class="review-text">${r.text}</p>
-                                <div class="admin-review-actions">
-                                    <button type="button" class="btn-secondary admin-approve-btn" data-id="${r.id}">Approve</button>
-                                    <button type="button" class="btn-secondary admin-reject-btn" data-id="${r.id}">Reject</button>
-                                </div>
-                            `;
-                            adminList.appendChild(row);
-                        });
-                    }
-
-                    if (window.lucide) lucide.createIcons();
-
-                    adminList.querySelectorAll('.admin-approve-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const id = btn.dataset.id;
-                            const all = loadPending();
-                            const review = all.find(r => r.id === id);
-                            if (!review) return;
-
-                            savePending(all.filter(r => r.id !== id));
-
-                            const existing = adminCodeText.value.trim();
-                            const snippet = reviewToCodeSnippet(review);
-                            adminCodeText.value = existing ? `${existing},\n${snippet}` : snippet;
-                            adminCodeBox.style.display = 'block';
-
-                            renderAdminList();
-                        });
-                    });
-
-                    adminList.querySelectorAll('.admin-reject-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const id = btn.dataset.id;
-                            savePending(loadPending().filter(r => r.id !== id));
-                            renderAdminList();
-                        });
-                    });
-                }
-
-                function initAdmin() {
-                    const params = new URLSearchParams(window.location.search);
-                    if (params.get('admin') !== 'true' || !adminPanel) return;
-
-                    const entered = window.prompt('Enter admin passcode to review submissions:');
-                    if (entered !== ADMIN_CODE) {
-                        if (entered !== null) alert('Incorrect passcode.');
-                        return;
-                    }
-
-                    adminPanel.style.display = 'block';
-                    renderAdminList();
-
-                    if (adminCopyBtn) {
-                        adminCopyBtn.addEventListener('click', () => {
-                            navigator.clipboard.writeText(adminCodeText.value).then(() => {
-                                adminCopyBtn.textContent = 'Copied!';
-                                setTimeout(() => { adminCopyBtn.textContent = 'Copy Code'; }, 2000);
-                            });
-                        });
-                    }
-                }
-
-                initAdmin();
+                fetchGoogleSheetReviews();
             })();
 
             if (typeof gsap !== 'undefined') {
@@ -3097,9 +3019,9 @@
 
     <!-- Bottom Mantra Section -->
     <div class="shloka-banner">
-        करचरण कृतं वाक्कायजं कर्मजं वा ।<br>
-        श्रवणनयनजं वा मानसं वापराधं ।<br>
-        विहितमविहितं वा सर्वमेतत्क्षमस्व ।<br>
+        करचरण कृतं वाक्कायजं कर्मजं वा ।
+        श्रवणनयनजं वा मानसं वापराधं ।
+        विहितमविहितं वा सर्वमेतत्क्षमस्व ।
         जय जय करुणाब्धे श्रीमहादेव शम्भो ॥
     </div>
 </body>
